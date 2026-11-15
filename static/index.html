@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F8FAFC">
+  <title>Competitor &amp; Offer Intelligence Hub</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script id="chart-library" async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="shell header-inner">
+      <div class="identity">
+        <span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+        <div><h1>Competitor &amp; Offer Intelligence Hub</h1><p>Market Positioning, Landing CRO &amp; Offer Diff Intelligence</p></div>
+      </div>
+      <div class="header-actions">
+        <form id="demo-form" class="controls">
+          <label for="demo-case">Демо-кейс</label>
+          <select id="demo-case" required>
+            <option value="b2b_agency">B2B-агентство и автоматизация</option>
+            <option value="edtech">Онлайн-школа EdTech</option>
+          </select>
+          <button type="submit">Переключить</button>
+        </form>
+        <div class="exports controls" aria-label="Экспорт отчётов">
+          <a class="button primary" href="/api/exports/excel" download>↓ Скачать Excel (.xlsx)</a>
+          <a class="button" href="/api/exports/csv" download>CSV</a>
+          <a class="button" href="/api/exports/battlecards.md" download>Battlecards (.md)</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+    <nav class="tabs" aria-label="Рабочие разделы" role="tablist">
+      <button id="tab-market" role="tab" aria-controls="market" aria-selected="true">Обзор рынка и CRO</button>
+      <button id="tab-alerts" role="tab" aria-controls="alerts" aria-selected="false" tabindex="-1">Лента изменений</button>
+      <button id="tab-capture" role="tab" aria-controls="capture" aria-selected="false" tabindex="-1">Песочница и слепки</button>
+      <button id="tab-battlecards" role="tab" aria-controls="battlecards" aria-selected="false" tabindex="-1">Боевые карточки</button>
+    </nav>
+    <main>
+      <header class="workbar">
+        <h2 id="view-title">Обзор рынка и CRO</h2>
+        <p id="view-caption">Позиция нашего оффера по цене и конверсии</p>
+      </header>
+      <p id="app-error" class="notice error" role="alert" hidden></p>
+      <section id="market" role="tabpanel" aria-labelledby="tab-market">
+        <div id="kpis" class="kpi-grid" aria-live="polite"><p>Загрузка данных рынка…</p></div>
+        <div class="two-col charts">
+          <article class="panel">
+            <h3>CRO &amp; Offer Radar</h3><p class="muted">Баллы по 5 критериям · до 20 на каждой оси</p>
+            <div class="chart-frame" id="radar-frame"></div><div id="radar-fallback" class="table-scroll"></div>
+          </article>
+          <article class="panel">
+            <h3>Price &amp; CRO Positioning</h3><p class="muted">Минимальная цена и итоговый CRO Score</p>
+            <label id="currency-control" hidden>Валюта диаграммы <select id="price-currency"></select></label>
+            <div class="chart-frame" id="price-frame"></div><div id="price-fallback" class="table-scroll"></div>
+          </article>
+        </div>
+        <article class="panel">
+          <h3>Матрица игроков рынка</h3>
+          <div id="matrix" class="table-scroll"></div>
+        </article>
+        <article id="player-detail" class="panel" aria-live="polite" tabindex="-1" hidden></article>
+      </section>
+      <section id="alerts" role="tabpanel" aria-labelledby="tab-alerts" hidden>
+        <div class="two-col align-start">
+          <article class="panel">
+            <h3>Лента алертов</h3>
+            <div class="controls filters">
+              <label>Критичность <select id="severity"><option value="">Все</option><option value="high">HIGH</option><option value="medium">MEDIUM</option><option value="low">LOW</option></select></label>
+              <label>Статус <select id="ack-status"><option value="">Все</option><option value="false">Только новые</option></select></label>
+            </div>
+            <div id="alert-list" class="stack" aria-live="polite"></div>
+          </article>
+          <article class="panel">
+            <h3>Diff-инспектор слепков</h3>
+            <form id="diff-form" class="stack">
+              <label>Игрок <select id="diff-player" required></select></label>
+              <label>Страница <select id="diff-page" required></select></label>
+              <div class="two-col compact">
+                <label>Было <select id="old-snapshot" required></select></label>
+                <label>Стало <select id="new-snapshot" required></select></label>
+              </div>
+              <button class="primary" type="submit">Сравнить слепки</button>
+            </form>
+            <div id="diff-result" class="stack result" aria-live="polite"></div>
+          </article>
+        </div>
+      </section>
+      <section id="capture" role="tabpanel" aria-labelledby="tab-capture" hidden>
+        <div class="two-col align-start">
+          <article class="panel">
+            <h3>Источник оффера</h3>
+            <form id="capture-form" class="stack" novalidate>
+              <label>Режим <select id="capture-mode">
+                <option value="raw_html">Вставить HTML</option>
+                <option value="upload">Загрузить файл (.html / .json)</option>
+                <option value="manual_text">Текст оффера</option>
+                <option value="live_url">Живой URL</option>
+              </select></label>
+              <div class="two-col compact">
+                <label>Игрок <select id="capture-player"></select></label>
+                <label>Страница для сохранения <select id="capture-page"></select></label>
+              </div>
+              <label id="content-field"><span id="content-label">HTML страницы</span><textarea id="capture-content" rows="10" spellcheck="false" placeholder="Вставьте HTML страницы"></textarea></label>
+              <label id="file-field" hidden>Файл слепка <input id="capture-file" type="file" accept=".html,.json"></label>
+              <label id="url-field" hidden>URL для предпросмотра <input id="capture-url" type="url" placeholder="https://example.com/"><small id="capture-url-hint">Сохранение использует URL отслеживаемой страницы.</small></label>
+              <button id="example" class="text-button" type="button">Подставить пример HTML-лендинга</button>
+              <div class="controls">
+                <button class="primary" type="submit" value="preview">Анализ без сохранения</button>
+                <button type="submit" value="save">Сохранить слепок</button>
+              </div>
+            </form>
+            <p id="capture-status" class="notice" role="status" hidden></p>
+          </article>
+          <article class="panel">
+            <h3>Разбор оффера</h3>
+            <div id="capture-result" aria-live="polite"><p class="empty">Добавьте источник и запустите анализ, чтобы увидеть CRO Score и найденные элементы оффера.</p></div>
+          </article>
+        </div>
+      </section>
+      <section id="battlecards" role="tabpanel" aria-labelledby="tab-battlecards" hidden>
+        <div id="card-grid" class="two-col align-start"></div>
+      </section>
+    </main>
+  </div>
+  <footer class="shell">Competitor &amp; Offer Intelligence Hub · Алексей Ханипов · AI &amp; Marketing Automation (<a href="https://cyberneuro.ru">cyberneuro.ru</a>)</footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
